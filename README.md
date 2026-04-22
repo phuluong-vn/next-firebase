@@ -89,3 +89,11 @@
     - stripe_invoice_id: string
     - status: string
 ```
+
+## Package installe:
+    - firebase: pnpm install firebase //connect with firebase
+    - shacn-ui: pnpm dlx shadcn@latest init
+    - clsx: pnpm install --save clsx
+    - react-hook-form: pnpm install react-hook-form
+    - bcrypt: pnpm i bcrypt //hash password
+    - @types/bcrypt: pnpm i -D @types/bcrypt
