@@ -1,16 +1,27 @@
 //model.ts is used to implement basic CRUD operations and handle communication with the database.
 
 import { addDoc, collection, getDoc, getDocs, query, Timestamp, where } from "firebase/firestore";
-import {  ICreateAdminInput } from "./type";
+import {  IAdminDB, ICreateAdminInput } from "./type";
 import { db } from "@/utils/firebase";
 import { COLLECTION } from "@/constants/commons";
 import { hashPassword } from "@/utils/commons/password";
 
-export const createAdmin = async (data: ICreateAdminInput)=>{
-    const adminRef = collection(db,COLLECTION.ADMIN);
+const adminRef = collection(db,COLLECTION.ADMIN);
 
-    const existEmail = await getDocs(query(adminRef, where("email","==", data.email)));
-    if(existEmail.docs.length)
+export const findAdminByEmail = async (email:string) : Promise<IAdminDB> =>{
+    const existAdmin = await getDocs(query(adminRef, where("email","==", email)));
+
+    const admin = existAdmin.docs[0].data() as IAdminDB
+    return {
+        ...admin,
+         id: existAdmin.docs[0].id
+    }
+} 
+
+export const createAdmin = async (data: ICreateAdminInput)=>{
+    
+    const existEmail = await findAdminByEmail(data.email);
+    if(existEmail)
     {
         throw Error('Email is existed')
     }
@@ -28,5 +39,5 @@ export const createAdmin = async (data: ICreateAdminInput)=>{
     const newAdmin = await getDoc(newAdminRef);
 
     return {id: newAdmin.id, ...newAdmin.data()}
-
 }
+
