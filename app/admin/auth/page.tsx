@@ -46,8 +46,9 @@ export default function AdminLoginForm () {
         console.log(res?.error)
       toast.error(`Can't login, ${(res?.error  || `check your email or password!`)}`);
     } else {
-      router.push("/admin");
-      toast.success("Login success!");
+        toast.success("Login success!");
+      router.push("/admin/dashboard");
+      
     }
   } catch (e) {
     toast.error("Can't login, check your email or password!");
