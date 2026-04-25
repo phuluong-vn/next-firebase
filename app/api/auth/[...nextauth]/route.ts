@@ -27,7 +27,7 @@ export const authOption: NextAuthOptions = {
     providers : [
         CredentialsProvider({
              credentials: {},
-            async authorize(credentials, req) {
+            async authorize(credentials) {
                 console.log(credentials);
                 const {email, password} = credentials as ICreateAdminInput;
                 //TODO: implement login logic

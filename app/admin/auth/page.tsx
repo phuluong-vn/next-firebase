@@ -16,31 +16,42 @@ import { Label } from "@/components/ui/label"
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import { ICreateAdminInput } from '@/features/managers/type'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 
 export default function AdminLoginForm () {
 
+    const {
+        control,
+        handleSubmit,
+        formState: {isValid, errors}} = useForm<ICreateAdminInput>({
+            mode:'onBlur',
+        defaultValues:{
+            email:"",
+            password:""
+        }
+    });
     const router = useRouter();
-    const onLogin = async (data:FormData) =>{
-        try{
-            const res = await signIn("credentials",{
-                email: data.get("email"),
-                password: data.get("password"),
-                redirect: false
-            });
-            if(res?.error)
-            {
-                toast.error("Can't login, check your email or password!")
-            }
-            else {
-                router.push("/admin");
-                toast.success("Login success!")
-            }
-        }
-        catch(error)
-        {
-            toast.error("Can't login, check your email or password!")
-        }
+    const onLogin: SubmitHandler<ICreateAdminInput> = async (data) => {
+  try {
+    const res = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false
+    });
+
+    if (res?.error) {
+      toast.error("Can't login, check your email or password!");
+    } else {
+      router.push("/admin");
+      toast.success("Login success!");
     }
+  } catch (e) {
+    toast.error("Can't login, check your email or password!");
+  }
+};
+    
   return ( 
     <div className='flex items-center justify-center min-h-screen'>
     <Card className="w-full max-w-sm">
@@ -54,17 +65,26 @@ export default function AdminLoginForm () {
         </CardAction>
       </CardHeader>
       <CardContent>
-        <form action={onLogin}>
+        <form onSubmit={handleSubmit(onLogin)}>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                name="email"
+              <Controller control={control} name='email' 
+              rules={{required:{value:true, message:"Email is required"},
+                pattern: {value: /^\S+@\S+\.\S+$/, message: "Email is invalid"}}} 
+              render={({field, fieldState})=>(
+                  <Field data-invalid={fieldState.invalid}>
+                <Input
+                {...field}
+                aria-invalid={fieldState.invalid}
                 placeholder="m@example.com"
-                required
               />
+              {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                  </Field>   
+             )}/>
+             
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
@@ -76,10 +96,27 @@ export default function AdminLoginForm () {
                   Forgot your password?
                 </a>
               </div>
-              <Input id="password" type="password" name="password" required />
+               <Controller control={control} name='password' 
+               rules={{required:{value:true, message:"Password is required"},
+                minLength:{value: 6, message: "Password must be at least 6 characters"}}}
+               render={({field, fieldState})=>(
+                 <Field data-invalid={fieldState.invalid}>
+                <Input
+                id="password"
+                type="password"
+                 aria-invalid={fieldState.invalid}
+                {...field}
+                placeholder="******"
+              />
+              {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+              </Field>
+             )}/>
+              
             </div>
           </div>
-          <Button type="submit" className="w-full mt-3">
+          <Button type="submit" className="w-full mt-3" disabled={!isValid}>
           Login
         </Button>
         </form>
