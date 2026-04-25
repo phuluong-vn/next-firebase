@@ -17,32 +17,34 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
-import { ICreateAdminInput } from '@/features/managers/type'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError } from '@/components/ui/field'
+import { LoginFormValues, loginSchema } from '@/features/managers/rules'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 export default function AdminLoginForm () {
 
     const {
         control,
         handleSubmit,
-        formState: {isValid, errors}} = useForm<ICreateAdminInput>({
-            mode:'onBlur',
-        defaultValues:{
-            email:"",
-            password:""
-        }
+        formState: {isValid}} = useForm<LoginFormValues>({
+            resolver: zodResolver(loginSchema),
+            mode:'onChange',
+            defaultValues:{
+                email:"",
+                password:""
+            }
     });
     const router = useRouter();
-    const onLogin: SubmitHandler<ICreateAdminInput> = async (data) => {
+    const onLogin: SubmitHandler<LoginFormValues> = async (data) => {
   try {
     const res = await signIn("credentials", {
       email: data.email,
       password: data.password,
       redirect: false
     });
-
     if (res?.error) {
-      toast.error("Can't login, check your email or password!");
+        console.log(res?.error)
+      toast.error(`Can't login, ${(res?.error  || `check your email or password!`)}`);
     } else {
       router.push("/admin");
       toast.success("Login success!");
@@ -70,8 +72,6 @@ export default function AdminLoginForm () {
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Controller control={control} name='email' 
-              rules={{required:{value:true, message:"Email is required"},
-                pattern: {value: /^\S+@\S+\.\S+$/, message: "Email is invalid"}}} 
               render={({field, fieldState})=>(
                   <Field data-invalid={fieldState.invalid}>
                 <Input
@@ -96,9 +96,7 @@ export default function AdminLoginForm () {
                   Forgot your password?
                 </a>
               </div>
-               <Controller control={control} name='password' 
-               rules={{required:{value:true, message:"Password is required"},
-                minLength:{value: 6, message: "Password must be at least 6 characters"}}}
+               <Controller control={control} name='password'
                render={({field, fieldState})=>(
                  <Field data-invalid={fieldState.invalid}>
                 <Input

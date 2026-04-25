@@ -11,6 +11,10 @@ const adminRef = collection(db,COLLECTION.ADMIN);
 export const findAdminByEmail = async (email:string) : Promise<IAdminDB> =>{
     const existAdmin = await getDocs(query(adminRef, where("email","==", email)));
 
+    if(!existAdmin.docs[0])
+    {
+        throw Error("Email is not exist!");
+    }
     const admin = existAdmin.docs[0].data() as IAdminDB
     return {
         ...admin,
