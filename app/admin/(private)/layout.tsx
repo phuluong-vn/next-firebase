@@ -1,22 +1,25 @@
 import { Toaster } from "@/components/ui/sonner"
 
-
-
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { AppSidebar } from "./components/app-sidebar";
 import { SiteHeader } from "./components/site-header";
-import { SectionCards } from "./components/section-cards";
-import { ChartAreaInteractive } from "./components/chart-area-interactive";
-import { DataTable } from "./components/data-table";
+import { getServerSession } from "next-auth";
+import { authOption } from "@/app/api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOption);
+  if(!session?.user)
+  {
+    redirect("/admin/auth");
+  }
     return (
     <SidebarProvider
       style={
