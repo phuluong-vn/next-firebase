@@ -4,8 +4,8 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { AppSidebar } from "./components/app-sidebar";
-import { SiteHeader } from "./components/site-header";
+import { AppSidebar } from "../../../components/commons/app-sidebar";
+import { SiteHeader } from "../../../components/commons/site-header";
 import { getServerSession } from "next-auth";
 import { authOption } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
