@@ -3,8 +3,20 @@ import CategoryTable from './table'
 import TableHeader from './table-header'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import TablePagination from '@/components/commons/table-pagination'
+import { getCategories } from '@/features/categories/model'
+import { IGetDataInput } from '@/features/type'
 
-const Category = () => {
+interface IProps {
+  searchParams: IGetDataInput;
+}
+
+const Category = async ({searchParams}:IProps) => {
+  const res = await getCategories({
+    keyword: searchParams.keyword || "",
+    page: searchParams.page,
+    orderField: searchParams.orderField || "name",
+    orderType: searchParams.orderType || "desc",
+  });
   return (
     <div className="p-5">
       <TableHeader />
@@ -15,7 +27,7 @@ const Category = () => {
         </CardHeader>
         <CardContent>
           <Suspense >
-            <CategoryTable />
+            <CategoryTable data={res.data} />
           </Suspense>
         </CardContent>
         <CardFooter className="flex justify-between">

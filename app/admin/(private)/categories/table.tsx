@@ -1,16 +1,22 @@
 import React from 'react'
+import moment from "moment";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 import { MdOutlineModeEdit,MdOutlineDeleteForever  } from "react-icons/md";
+import { ICategoryDb } from '@/features/categories/type';
 
-const CategoryTable = () => {
+interface IProps {
+  data: ICategoryDb[];
+}
+
+const CategoryTable = async({data}:IProps) => {
+
   return (
     <Table>
   <TableHeader>
@@ -23,18 +29,20 @@ const CategoryTable = () => {
     </TableRow>
   </TableHeader>
   <TableBody>
-    <TableRow>
-      <TableCell>INV001</TableCell>
-      <TableCell>Paid</TableCell>
-      <TableCell>12/09/2024</TableCell>
-      <TableCell>12/09/2024</TableCell>
-       <TableCell>
-        <div className='flex justify-center gap-1'>
-            <MdOutlineModeEdit />
-            <MdOutlineDeleteForever />
-        </div>
-       </TableCell>
-    </TableRow>
+       {data.map((category) => (
+        <TableRow key={category.id}>
+            <TableCell>{category.name}</TableCell>
+            <TableCell>{category.slug}</TableCell>
+            <TableCell>{moment.unix(category.created_at.seconds).calendar()}</TableCell>
+            <TableCell>{moment.unix(category.updated_at.seconds).calendar()}</TableCell>
+            <TableCell>
+                <div className='flex justify-center gap-1'>
+                    <MdOutlineModeEdit />
+                    <MdOutlineDeleteForever />
+                </div>
+            </TableCell>
+        </TableRow>
+       ))}
   </TableBody>
 </Table>
   )
