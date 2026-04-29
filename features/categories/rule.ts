@@ -6,3 +6,5 @@ export const CategorySchema = z.object({
   description: z.string().min(1, "description slug is required"),
   images: z.array(z.string()).optional(),
 });
+
+export type CategoryFormValues = z.infer<typeof CategorySchema>;

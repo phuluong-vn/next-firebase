@@ -5,31 +5,43 @@ import { db } from "@/utils/firebase";
 import { COLLECTION } from "@/constants/commons";
 import { IGetDataInput, IPaginationRes } from "../type";
 import { getLastVisibleDoc } from "@/utils/commons/queries";
+import { normalizeSlug } from "@/utils/commons/slug";
 
 const categoriesRef = collection(db,COLLECTION.CATEGORY);
 
-export const getCategoryBySlug = async (slug: string) =>{
-    const existedCategory = await getDocs(query(categoriesRef, where ("slug","==",slug)));
-    if(!existedCategory.docs[0])
-        return undefined;
-    const category = existedCategory.docs[0].data() as ICategoryDoc;
 
-    return {
-        ...category,
-        id: existedCategory.docs[0].id
-    }
+export const getCategoryBySlug = async (slug: string) =>{
+    const normalizedSlug = normalizeSlug(slug);
+     const snapshot = await getDocs(
+    query(
+      categoriesRef,
+      where("slug", "==", normalizedSlug),
+      limit(1)
+    )
+  );
+  if (snapshot.empty) return undefined;
+
+  const doc = snapshot.docs[0];
+
+  return {
+    ...(doc.data() as ICategoryDoc),
+    id: doc.id,
+  };
 }
 
-export const AddCategory = async(data: ICreateCategoryInput):Promise<ICategoryDb> =>{
+export const addCategory = async(data: ICreateCategoryInput):Promise<ICategoryDb> =>{
+    debugger
     const validate = await CategorySchema.safeParse(data);
     if(!validate.success)
     {
-        throw new Error(validate.error.issues[0].message);
+        throw Error(validate.error.issues[0].message);
     }
-    const existedCategory = await getCategoryBySlug(data.slug);
+    const slug = normalizeSlug(data.slug);
+    const existedCategory = await getCategoryBySlug(slug);
+    console.log(existedCategory);
     if(existedCategory)
     {
-        throw new Error("Slug have been used!");
+        throw Error("Slug have been used!");
     }
     const newCateRef = await addDoc(categoriesRef,{
         ...data,
@@ -92,7 +104,7 @@ export const AddCategory = async(data: ICreateCategoryInput):Promise<ICategoryDb
     id: d.id,
   }));
 
-  // 🔹 COUNT (phải giống filter, bỏ pagination)
+  // 🔹 COUNT 
   const countConstraints: QueryConstraint[] = [];
 
   if (keyword) {

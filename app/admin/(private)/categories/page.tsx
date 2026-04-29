@@ -18,7 +18,7 @@ const Category = async ({searchParams}:IProps) => {
     orderType: searchParams.orderType || "desc",
   });
   return (
-    <div className="p-5">
+    <div>
       <TableHeader />
       <Card x-chunk="dashboard-06-chunk-0">
         <CardHeader>

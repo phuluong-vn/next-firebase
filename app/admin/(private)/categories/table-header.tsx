@@ -13,14 +13,14 @@ const TableHeader = () => {
       <div className="flex items-center gap-2">
          <OrderData />
         <div className="ml-auto flex items-center gap-2">
-          <Button size="sm" className="h-8 gap-1">
-            <PlusCircle className="h-3.5 w-3.5" />
-            <Link
-              href=""
+           <Link
+              href="/admin/categories/new"
               className="sr-only sm:not-sr-only sm:whitespace-nowrap"
             >
-            </Link>
+          <Button size="sm" className="h-8 gap-1">
+            <PlusCircle className="h-3.5 w-3.5" />
           </Button>
+          </Link>
         </div>
       </div>
     </div>
