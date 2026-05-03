@@ -1,3 +1,4 @@
+"use client";
 import React from 'react'
 import moment from "moment";
 import {
@@ -8,17 +9,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { MdOutlineModeEdit,MdOutlineDeleteForever  } from "react-icons/md";
+import { MdOutlineModeEdit  } from "react-icons/md";
 import { ICategoryDb } from '@/features/categories/type';
+import Link from 'next/dist/client/link';
+import TableDeleteAction from './table-delete-action';
 
 interface IProps {
   data: ICategoryDb[];
 }
 
-const CategoryTable = async({data}:IProps) => {
+const CategoryTable = ({data}:IProps) => {
 
   return (
-    <Table>
+    <Table >
   <TableHeader>
     <TableRow>
       <TableHead>Name</TableHead>
@@ -37,8 +40,10 @@ const CategoryTable = async({data}:IProps) => {
             <TableCell>{moment.unix(category.updated_at.seconds).calendar()}</TableCell>
             <TableCell>
                 <div className='flex justify-center gap-1'>
-                    <MdOutlineModeEdit />
-                    <MdOutlineDeleteForever />
+                    <Link href={`/admin/categories/edit/${category.id}`}>
+                        <MdOutlineModeEdit />
+                    </Link>
+                    <TableDeleteAction id={category.id} />
                 </div>
             </TableCell>
         </TableRow>

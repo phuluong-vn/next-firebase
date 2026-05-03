@@ -20,7 +20,7 @@ const OrderData = ({ options }: IOrderProps) => {
   const { replace } = useRouter();
 
   const orderField = useMemo(
-    () => searchParams.get("orderField") || "name",
+    () => searchParams.get("orderField") || "created_at",
     [searchParams]
   );
 

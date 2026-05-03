@@ -1,11 +1,12 @@
 import { IDocDb } from "../type";
 
-export interface ICreateCategoryInput {
+export interface ICategoryInput {
   name: string;
   slug: string;
   description: string; // html
   images?: string[]; // url to storage firebase
 }
 
-export interface ICategoryDb extends ICreateCategoryInput, IDocDb {}
-export interface ICategoryDoc extends ICreateCategoryInput, Omit<IDocDb, "id"> {}
+export interface ICategoryDb extends ICategoryInput, IDocDb {}
+export interface ICategoryDoc extends ICategoryInput, Omit<IDocDb, "id"> {}
+

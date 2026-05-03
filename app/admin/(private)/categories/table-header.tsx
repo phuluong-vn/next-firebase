@@ -15,8 +15,7 @@ const TableHeader = () => {
         <div className="ml-auto flex items-center gap-2">
            <Link
               href="/admin/categories/new"
-              className="sr-only sm:not-sr-only sm:whitespace-nowrap"
-            >
+              className="sr-only sm:not-sr-only sm:whitespace-nowrap">
           <Button size="sm" className="h-8 gap-1">
             <PlusCircle className="h-3.5 w-3.5" />
           </Button>
