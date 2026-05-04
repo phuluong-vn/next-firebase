@@ -12,14 +12,17 @@ import {
 import { MdOutlineModeEdit  } from "react-icons/md";
 import Link from 'next/link';
 import { IAdminDB } from '@/features/managers/type';
-import TableDeleteAction from './table-delete-action';
+import TableDeleteAction, { ActiveAdminAction } from './table-action';
+import { updateActiveAdminAction } from './action';
 
 interface IProps {
   data: IAdminDB[];
 }
 
 const ManagerTable = ({data}:IProps) => {
-
+const onChangeActive = async (id: string, isActive: boolean) => {
+    await updateActiveAdminAction(id, isActive);
+  };
   return (
     <Table >
   <TableHeader>
@@ -37,7 +40,11 @@ const ManagerTable = ({data}:IProps) => {
             <TableCell>{manager.email}</TableCell>
             <TableCell>{moment(manager.created_at).calendar()}</TableCell>
             <TableCell>{moment(manager.updated_at).calendar()}</TableCell>
-             <TableCell>{manager.isActive ? "Active" : "Inactive"}</TableCell>
+             <TableCell>   <ActiveAdminAction
+                isActive={manager.isActive}
+                id={manager.id}
+                updateActiveAdmin={onChangeActive}
+              /></TableCell>
             <TableCell>
                 <div className='flex justify-center gap-1'>
                     <Link href={`/admin/managers/edit/${manager.id}`}>

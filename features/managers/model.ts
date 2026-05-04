@@ -1,7 +1,7 @@
 //model.ts is used to implement basic CRUD operations and handle communication with the database.
 
-import { addDoc, collection, endAt, getCountFromServer, getDoc, getDocs, limit, orderBy, query, QueryConstraint, startAfter, startAt, Timestamp, where } from "firebase/firestore";
-import {  IAdminDB, ICreateAdminInput } from "./type";
+import { addDoc, collection, deleteDoc, doc, endAt, getCountFromServer, getDoc, getDocs, limit, orderBy, query, QueryConstraint, startAfter, startAt, Timestamp, updateDoc, where } from "firebase/firestore";
+import {  IAdminDB, IAdminDoc, IAdminInput } from "./type";
 import { db } from "@/utils/firebase";
 import { COLLECTION } from "@/constants/commons";
 import { hashPassword } from "@/utils/commons/password";
@@ -11,12 +11,12 @@ import { serializeDocs } from "@/lib/serialize";
 
 const adminRef = collection(db,COLLECTION.ADMIN);
 
-export const findAdminByEmail = async (email:string) : Promise<IAdminDB> =>{
+export const findAdminByEmail = async (email:string) : Promise<IAdminDB | undefined> =>{
     const existAdmin = await getDocs(query(adminRef, where("email","==", email)));
 
     if(!existAdmin.docs[0])
     {
-        throw Error("Email is not exist!");
+        return undefined;
     }
     const admin = existAdmin.docs[0].data() as IAdminDB
     return {
@@ -25,8 +25,11 @@ export const findAdminByEmail = async (email:string) : Promise<IAdminDB> =>{
     }
 } 
 
-export const createAdmin = async (data: ICreateAdminInput)=>{
-    
+export const deleteManagerById = async (id: string) =>{
+  if (!id) throw new Error("Invalid ID"); 
+  return await deleteDoc(doc(adminRef, id));
+}
+export const createAdmin = async (data: IAdminInput)=>{
     const existEmail = await findAdminByEmail(data.email);
     if(existEmail)
     {
@@ -39,6 +42,7 @@ export const createAdmin = async (data: ICreateAdminInput)=>{
         {
             email: data.email,
             password: hashedPassword,
+            isActive: true,
             created_at: Timestamp.now(),
             updated_at: Timestamp.now(),
         });
@@ -47,6 +51,16 @@ export const createAdmin = async (data: ICreateAdminInput)=>{
 
     return {id: newAdmin.id, ...newAdmin.data()}
 }
+
+export const updateActiveAdmin = async (id: string, isActive: boolean) => {
+  await updateDoc(doc(adminRef, id), {
+    isActive,
+  });
+
+  const newCategory = await getDoc(doc(adminRef, id));
+
+  return { id: newCategory.id, ...(newCategory.data() as IAdminDoc) };
+};
 
 
 //get all categories for list category with pagination, search, order
@@ -129,3 +143,5 @@ export const createAdmin = async (data: ICreateAdminInput)=>{
       data: managers,
     };
   };
+
+

@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { Field, FieldError } from '@/components/ui/field'
-import { LoginFormValues, loginSchema } from '@/features/managers/rules'
+import { LoginFormValues, LoginSchema } from '@/features/managers/rules'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 export default function AdminLoginForm () {
@@ -27,7 +27,7 @@ export default function AdminLoginForm () {
         control,
         handleSubmit,
         formState: {isValid}} = useForm<LoginFormValues>({
-            resolver: zodResolver(loginSchema),
+            resolver: zodResolver(LoginSchema),
             mode:'onChange',
             defaultValues:{
                 email:"",

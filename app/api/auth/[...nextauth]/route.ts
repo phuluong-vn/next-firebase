@@ -1,6 +1,6 @@
 import { findAdminByEmail } from "@/features/managers/model";
-import { loginSchema } from "@/features/managers/rules";
-import { ICreateAdminInput } from "@/features/managers/type";
+import { LoginSchema } from "@/features/managers/rules";
+import { IAdminInput } from "@/features/managers/type";
 import { comparePassword } from "@/utils/commons/password";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -32,12 +32,12 @@ export const authOption: NextAuthOptions = {
         CredentialsProvider({
              credentials: {},
             async authorize(credentials) {
-                 const result = loginSchema.safeParse(credentials as ICreateAdminInput);
+                 const result = LoginSchema.safeParse(credentials as IAdminInput);
                 if (!result.success) {
                     throw new Error(result.error.issues[0].message);
                 }
 
-                const {email, password} = credentials as ICreateAdminInput;
+                const {email, password} = credentials as IAdminInput;
                 //TODO: implement login logic
                 //find admin by email
                 //compare password

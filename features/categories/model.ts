@@ -69,11 +69,11 @@ export const addCategory = async(data: ICategoryInput):Promise<ICategoryDb> =>{
     return {...(newCategory.data() as ICategoryDb), id: newCateRef.id};
 }
 
-export const editCategory = async(id: string, data: ICategoryInput):Promise<ICategoryDb> =>{
+export const editCategory = async(id: string, data: ICategoryInput):Promise<ICategoryDb | undefined> =>{
   const category = await getCategoryById(id);
   if(!category)
   {
-    throw Error("Category not found!");
+    return undefined;
   }  
   const validate = await CategorySchema.safeParse(data);
     if(!validate.success)
