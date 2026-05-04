@@ -28,22 +28,22 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/admin/dashboard",
       icon: IconDashboard,
     },
     {
       title: "Manages",
-      url: "#",
+      url: "/admin/manages",
       icon: IconListDetails,
     },
     {
       title: "Categories",
-      url: "#",
+      url: "/admin/categories",
       icon: IconChartBar,
     },
     {
       title: "Products",
-      url: "#",
+      url: "/products",
       icon: IconFolder,
     },
   ]

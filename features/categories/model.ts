@@ -53,7 +53,7 @@ export const addCategory = async(data: ICategoryInput):Promise<ICategoryDb> =>{
     {
         throw Error(validate.error.issues[0].message);
     }
-    const slug = normalizeSlug(data.slug);
+    const slug = normalizeSlug(validate.data.slug);
     const existedCategory = await getCategoryBySlug(slug);
     if(existedCategory)
     {
@@ -80,7 +80,7 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
     {
         throw Error(validate.error.issues[0].message);
     }
-    const slug = normalizeSlug(data.slug);
+    const slug = normalizeSlug(validate.data.slug);
     const existedCategory = await getCategoryBySlug(slug);
     if(existedCategory && existedCategory.id !== id)
     {
