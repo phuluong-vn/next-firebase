@@ -120,8 +120,8 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
 ): Promise<IPaginationRes<ICategoryDb>> => {
   const {
     keyword,
-    orderField = "name",
-    orderType = "asc",
+    orderField = "created_at",
+    orderType = "desc",
     page = 1,
     size = 5,
   } = data;

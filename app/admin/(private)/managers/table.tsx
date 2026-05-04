@@ -10,40 +10,40 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { MdOutlineModeEdit  } from "react-icons/md";
-import { ICategoryDb } from '@/features/categories/type';
-import TableDeleteAction from './table-delete-action';
 import Link from 'next/link';
+import { IAdminDB } from '@/features/managers/type';
+import TableDeleteAction from './table-delete-action';
 
 interface IProps {
-  data: ICategoryDb[];
+  data: IAdminDB[];
 }
 
-const CategoryTable = ({data}:IProps) => {
+const ManagerTable = ({data}:IProps) => {
 
   return (
     <Table >
   <TableHeader>
     <TableRow>
       <TableHead>Name</TableHead>
-      <TableHead>Slug</TableHead>
       <TableHead>Created at</TableHead>
       <TableHead>Edited at</TableHead>
+      <TableHead>Status</TableHead>
       <TableHead className='w-100px'>Actions</TableHead>
     </TableRow>
   </TableHeader>
   <TableBody>
-       {data.map((category) => (
-        <TableRow key={category.id}>
-            <TableCell>{category.name}</TableCell>
-            <TableCell>{category.slug}</TableCell>
-            <TableCell>{moment(category.created_at).calendar()}</TableCell>
-            <TableCell>{moment(category.updated_at).calendar()}</TableCell>
+       {data.map((manager) => (
+        <TableRow key={manager.id}>
+            <TableCell>{manager.email}</TableCell>
+            <TableCell>{moment(manager.created_at).calendar()}</TableCell>
+            <TableCell>{moment(manager.updated_at).calendar()}</TableCell>
+             <TableCell>{manager.isActive ? "Active" : "Inactive"}</TableCell>
             <TableCell>
                 <div className='flex justify-center gap-1'>
-                    <Link href={`/admin/categories/edit/${category.id}`}>
+                    <Link href={`/admin/managers/edit/${manager.id}`}>
                         <MdOutlineModeEdit />
                     </Link>
-                    <TableDeleteAction id={category.id} />
+                    <TableDeleteAction id={manager.id} />
                 </div>
             </TableCell>
         </TableRow>
@@ -53,4 +53,4 @@ const CategoryTable = ({data}:IProps) => {
   )
 }
 
-export default CategoryTable
+export default ManagerTable

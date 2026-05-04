@@ -32,8 +32,8 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Manages",
-      url: "/admin/manages",
+      title: "Managers",
+      url: "/admin/managers",
       icon: IconListDetails,
     },
     {

@@ -8,13 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import TablePagination from "@/components/commons/table-pagination";
-import TableHeader from "./table-header";
+import TableHeader from "../../../../components/commons/table-header";
 import TableLoading from "@/components/commons/table-loading";
 
 const Category = async () => {
   return (
     <div>
-      <TableHeader/>
+      <TableHeader url="/admin/categories/new" />
       <Card x-chunk="dashboard-06-chunk-0">
         <CardHeader>
           <CardTitle className='text-3xl font-bold'>Categories</CardTitle>
