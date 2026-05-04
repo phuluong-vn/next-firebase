@@ -32,7 +32,6 @@ export const authOption: NextAuthOptions = {
         CredentialsProvider({
              credentials: {},
             async authorize(credentials) {
-                console.log(credentials);
                  const result = loginSchema.safeParse(credentials as ICreateAdminInput);
                 if (!result.success) {
                     throw new Error(result.error.issues[0].message);

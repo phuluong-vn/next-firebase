@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import {
   Select,
   SelectContent,
@@ -11,6 +11,8 @@ import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 
+const DEFAULT_FIELD = "created_at";
+const DEFAULT_TYPE = "desc";
 export interface IOrderProps {
   options?: string[];
 }
@@ -19,15 +21,8 @@ const OrderData = ({ options }: IOrderProps) => {
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  const orderField = useMemo(
-    () => searchParams.get("orderField") || "created_at",
-    [searchParams]
-  );
-
-  const orderType = useMemo(
-    () => searchParams.get("orderType") || "desc",
-    [searchParams]
-  );
+  const orderField = searchParams.get("orderField") ?? DEFAULT_FIELD;
+  const orderType = searchParams.get("orderType") || DEFAULT_TYPE;
 
   const onChangeOrderField = (value: string) => {
     const params = new URLSearchParams(searchParams);

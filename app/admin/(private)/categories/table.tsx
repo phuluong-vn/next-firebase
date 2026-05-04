@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/table"
 import { MdOutlineModeEdit  } from "react-icons/md";
 import { ICategoryDb } from '@/features/categories/type';
-import Link from 'next/dist/client/link';
 import TableDeleteAction from './table-delete-action';
+import Link from 'next/link';
 
 interface IProps {
   data: ICategoryDb[];
@@ -36,8 +36,8 @@ const CategoryTable = ({data}:IProps) => {
         <TableRow key={category.id}>
             <TableCell>{category.name}</TableCell>
             <TableCell>{category.slug}</TableCell>
-            <TableCell>{moment.unix(category.created_at.seconds).calendar()}</TableCell>
-            <TableCell>{moment.unix(category.updated_at.seconds).calendar()}</TableCell>
+            <TableCell>{moment(category.created_at).calendar()}</TableCell>
+            <TableCell>{moment(category.updated_at).calendar()}</TableCell>
             <TableCell>
                 <div className='flex justify-center gap-1'>
                     <Link href={`/admin/categories/edit/${category.id}`}>

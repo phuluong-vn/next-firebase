@@ -1,3 +1,4 @@
+'use client';
 
 import OrderData from "@/components/commons/order-data";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-
 
 const TableHeader = () => {
   return (

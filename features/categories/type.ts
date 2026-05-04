@@ -1,9 +1,9 @@
 import { IDocDb } from "../type";
 
 export interface ICategoryInput {
-  name: string;
-  slug: string;
-  description: string; // html
+  name?: string;
+  slug?: string;
+  description?: string; // html
   images?: string[]; // url to storage firebase
 }
 

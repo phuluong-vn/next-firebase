@@ -6,6 +6,7 @@ import { COLLECTION } from "@/constants/commons";
 import { IGetDataInput, IPaginationRes } from "../type";
 import { getLastVisibleDoc } from "@/utils/commons/queries";
 import { normalizeSlug } from "@/utils/commons/slug";
+import { serializeDocs, serializeSingleDoc } from "@/lib/serialize";
 
 const categoriesRef = collection(db,COLLECTION.CATEGORY);
 
@@ -34,7 +35,7 @@ export const getCategoryById = async (id: string) =>{
   if (!id) throw new Error("Invalid ID"); 
   const existedCategory  = await getDoc(doc(categoriesRef, id));
   if (!(existedCategory).exists) return undefined;
-  const category = existedCategory.data() as ICategoryDoc;
+  const category = serializeSingleDoc<ICategoryDb>(existedCategory);
   return {
     ...category,
     id: existedCategory.id,
@@ -54,7 +55,6 @@ export const addCategory = async(data: ICategoryInput):Promise<ICategoryDb> =>{
     }
     const slug = normalizeSlug(data.slug);
     const existedCategory = await getCategoryBySlug(slug);
-    console.log(data);
     if(existedCategory)
     {
         throw Error("Slug have been used!");
@@ -82,7 +82,6 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
     }
     const slug = normalizeSlug(data.slug);
     const existedCategory = await getCategoryBySlug(slug);
-    console.log(data);
     if(existedCategory && existedCategory.id !== id)
     {
         throw Error("Slug have been used!");
@@ -172,10 +171,7 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
     query(categoriesRef, ...constraints, limit(pageSize))
   );
 
-  const categories = snapshot.docs.map((doc) => ({
-    ...(doc.data() as ICategoryDoc),
-    id: doc.id,
-  }));
+  const categories = serializeDocs<ICategoryDb>(snapshot.docs);
 
   // =====================
   // COUNT TOTAL (ignore pagination but apply search)

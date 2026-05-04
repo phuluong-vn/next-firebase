@@ -6,7 +6,6 @@ import TablePagination from '@/components/commons/table-pagination'
 import { getCategories } from '@/features/categories/model'
 import { IGetDataInput } from '@/features/type'
 import SearchBar from '@/components/commons/search'
-import RefreshOnMount from '@/app/refresh-page'
 
 interface IProps {
   searchParams: IGetDataInput;
@@ -21,6 +20,8 @@ const Category = async ({searchParams}:IProps) => {
     orderField: params.orderField || "created_at",
     orderType: params.orderType || "desc",
   });
+
+
   return (
     <div>
       <TableHeader />
@@ -33,7 +34,6 @@ const Category = async ({searchParams}:IProps) => {
         </CardHeader>
         <CardContent>
           <Suspense >
-            <RefreshOnMount />
             <CategoryTable data={res.data} />
           </Suspense>
         </CardContent>

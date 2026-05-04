@@ -2,7 +2,7 @@
     
     import * as React from "react"
     import { zodResolver } from "@hookform/resolvers/zod"
-    import { Controller, SubmitHandler, useForm } from "react-hook-form"
+    import { Controller, useForm } from "react-hook-form"
     
     import { Button } from "@/components/ui/button"
     import {
@@ -28,6 +28,8 @@
     } from "@/components/ui/input-group"
     import { CategoryFormValues, CategorySchema } from "@/features/categories/rule"
 import { ICategoryInput } from "@/features/categories/type"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
    
     interface  IProps{
         nameFormAction:string;
@@ -36,11 +38,13 @@ import { ICategoryInput } from "@/features/categories/type"
     }
     
     export default function FormCategory ({nameFormAction, data, onSubmit}:IProps) {
-    
+    const router = useRouter();
+    useEffect(() => {
+    router.refresh();
+  }, []);
       const {
         control,
         handleSubmit,
-          reset,
         formState: { isValid }} = useForm<CategoryFormValues>({
           resolver: zodResolver(CategorySchema),
           mode:"onChange",
@@ -158,8 +162,8 @@ import { ICategoryInput } from "@/features/categories/type"
           </CardContent>
           <CardFooter>
             <Field orientation="horizontal">
-              <Button type="button" variant="outline" onClick={() => reset()}>
-                Reset
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Back
               </Button>
               <Button type="submit" form="form-rhf-demo" disabled={!isValid}>
                 Submit

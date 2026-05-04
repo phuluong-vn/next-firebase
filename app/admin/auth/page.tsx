@@ -43,7 +43,6 @@ export default function AdminLoginForm () {
       redirect: false
     });
     if (res?.error) {
-        console.log(res?.error)
       toast.error(`Can't login, ${(res?.error  || `check your email or password!`)}`);
     } else {
         toast.success("Login success!");
