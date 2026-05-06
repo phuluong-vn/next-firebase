@@ -1,5 +1,5 @@
-import { addCategory } from "@/features/categories/model";
-import { NextResponse } from "next/server";
+import { addCategory, getCategories } from "@/features/categories/model";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -22,3 +22,16 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export const GET = async (req: NextRequest) => {
+  console.log("GET categories with query:", req.nextUrl.searchParams.toString());
+  const keyword = (await req.nextUrl.searchParams.get("keyword")) || "";
+  const categories = await getCategories({
+    keyword,
+    page: 0,
+    orderField: "name",
+    orderType: "asc",
+    size: 20,
+  });
+  return NextResponse.json(categories);
+};

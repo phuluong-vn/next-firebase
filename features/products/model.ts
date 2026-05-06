@@ -1,21 +1,23 @@
-import { addDoc, collection, deleteDoc, doc, documentId, endAt, getCountFromServer, getDoc, getDocs, limit, orderBy, query, QueryConstraint, startAfter, startAt, Timestamp, updateDoc, where } from "firebase/firestore";
-import { CategorySchema } from "./rule";
-import { ICategoryDb, ICategoryDoc, ICategoryInput } from "./type";
+import { addDoc, collection, deleteDoc, doc, endAt, getCountFromServer, getDoc, getDocs, limit, orderBy, query, QueryConstraint, startAfter, startAt, Timestamp, updateDoc, where } from "firebase/firestore";
+import { ProductSchema } from "./rule";
+import { IProductDb, IProductDoc, IProductInput } from "./type";
 import { db } from "@/utils/firebase";
 import { COLLECTION } from "@/constants/commons";
 import { IGetDataInput, IPaginationRes } from "../type";
 import { getLastVisibleDoc } from "@/utils/commons/queries";
 import { normalizeSlug } from "@/utils/commons/slug";
 import { serializeDocs, serializeSingleDoc } from "@/lib/serialize";
+import { getManagerById } from "../managers/model";
+import { getCategoryByIds } from "../categories/model";
 
-const categoriesRef = collection(db,COLLECTION.CATEGORY);
+const productsRef = collection(db,COLLECTION.PRODUCT);
 
 
-export const getCategoryBySlug = async (slug: string) =>{
+export const getProductBySlug = async (slug: string) =>{
     const normalizedSlug = normalizeSlug(slug);
      const snapshot = await getDocs(
     query(
-      categoriesRef,
+      productsRef,
       where("slug", "==", normalizedSlug),
       limit(1)
     )
@@ -25,99 +27,106 @@ export const getCategoryBySlug = async (slug: string) =>{
   const doc = snapshot.docs[0];
 
   return {
-    ...(doc.data() as ICategoryDoc),
+    ...(doc.data() as IProductDoc),
     id: doc.id,
   };
 }
 
 
-export const getCategoryById = async (id: string) =>{
+export const getProductById = async (id: string) =>{
   if (!id) throw new Error("Invalid ID"); 
-  const existedCategory  = await getDoc(doc(categoriesRef, id));
-  if (!(existedCategory).exists) return undefined;
-  const category = serializeSingleDoc<ICategoryDb>(existedCategory);
+  const existedProduct  = await getDoc(doc(productsRef, id));
+  if (!(existedProduct).exists) return undefined;
+  const Product = serializeSingleDoc<IProductDb>(existedProduct);
   return {
-    ...category,
-    id: existedCategory.id,
+    ...Product,
+    id: existedProduct.id,
   };
 }
 
-export const deleteCategoryById = async (id: string) =>{
+export const deleteProductById = async (id: string) =>{
   if (!id) throw new Error("Invalid ID"); 
-  return await deleteDoc(doc(categoriesRef, id));
+  return await deleteDoc(doc(productsRef, id));
 }
 
-export const addCategory = async(data: ICategoryInput):Promise<ICategoryDb> =>{
-    const validate = await CategorySchema.safeParse(data);
+export const addProduct = async(data: IProductInput):Promise<IProductDb> =>{
+    const validate = await ProductSchema.safeParse(data);
     if(!validate.success)
     {
         throw Error(validate.error.issues[0].message);
     }
     const slug = normalizeSlug(validate.data.slug);
-    const existedCategory = await getCategoryBySlug(slug);
-    if(existedCategory)
+    const existedProduct = await getProductBySlug(slug);
+    if(existedProduct)
     {
         throw Error("Slug have been used!");
     }
-    const newCateRef = await addDoc(categoriesRef,{
-        ...data,
+
+    const { createdId, categoryIds, ...restData } = data;
+    
+    const created_by = await getManagerById(createdId);
+    const categories = await getCategoryByIds(categoryIds);
+    const newProducRef = await addDoc(productsRef,{
+        ...restData,
+        created_by: created_by,
+        categoryIds: categories.map((c) => c.id),
         created_at: Timestamp.now(),
         updated_at: Timestamp.now(),
     })
 
-    const newCategory = await getDoc(newCateRef);
-    return {...(newCategory.data() as ICategoryDb), id: newCateRef.id};
+    const newProduct = await getDoc(newProducRef);
+    return {...(newProduct.data() as IProductDb), id: newProducRef.id};
 }
 
-export const editCategory = async(id: string, data: ICategoryInput):Promise<ICategoryDb | undefined> =>{
-  const category = await getCategoryById(id);
-  if(!category)
+export const editProduct = async(id: string, data: IProductInput):Promise<IProductDb | undefined> =>{
+  const Product = await getProductById(id);
+  if(!Product)
   {
     return undefined;
   }  
-  const validate = await CategorySchema.safeParse(data);
+  const validate = await ProductSchema.safeParse(data);
     if(!validate.success)
     {
         throw Error(validate.error.issues[0].message);
     }
     const slug = normalizeSlug(validate.data.slug);
-    const existedCategory = await getCategoryBySlug(slug);
-    if(existedCategory && existedCategory.id !== id)
+    const existedProduct = await getProductBySlug(slug);
+    if(existedProduct && existedProduct.id !== id)
     {
         throw Error("Slug have been used!");
     }
     try {
-        await updateDoc(doc(categoriesRef, id), {
+        await updateDoc(doc(productsRef, id), {
             ...data,
             updated_at: Timestamp.now(),
         })
 
-          const updatedDoc = await getDoc(doc(categoriesRef, id));
-        return {...(updatedDoc.data() as ICategoryDb), id: updatedDoc .id};
+          const updatedDoc = await getDoc(doc(productsRef, id));
+        return {...(updatedDoc.data() as IProductDb), id: updatedDoc .id};
     } catch (error) {
-        throw Error("Failed to update category! Please try again.");
+        throw Error("Failed to update Product! Please try again.");
     }
    
 }
 
-//get all categories for select
- export const getAllCategories = async() => {
-    const categoriesDocRef = await getDocs(query(categoriesRef));
-    const categories = categoriesDocRef.docs.map((c)=>{
-        const data = c.data() as ICategoryDoc;
+//get all products for select
+ export const getAllProducts = async() => {
+    const productsDocRef = await getDocs(query(productsRef));
+    const products = productsDocRef.docs.map((c)=>{
+        const data = c.data() as IProductDoc;
         return {
             slug: data.slug,
             name: data.name,
             id:c.id,
         }
     });
-    return {data:categories};
+    return {data:products};
  };
 
-//get all categories for list category with pagination, search, order
- export const getCategories = async (
+//get all products for list Product with pagination, search, order
+ export const getProducts = async (
   data: IGetDataInput
-): Promise<IPaginationRes<ICategoryDb>> => {
+): Promise<IPaginationRes<IProductDb>> => {
   const {
     keyword,
     orderField = "created_at",
@@ -154,7 +163,7 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
   // =====================
   if (pageNumber > 1) {
     const lastDoc = await getLastVisibleDoc(
-      query(categoriesRef, ...constraints),
+      query(productsRef, ...constraints),
       pageNumber,
       pageSize
     );
@@ -168,10 +177,10 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
   // GET DATA
   // =====================
   const snapshot = await getDocs(
-    query(categoriesRef, ...constraints, limit(pageSize))
+    query(productsRef, ...constraints, limit(pageSize))
   );
 
-  const categories = serializeDocs<ICategoryDb>(snapshot.docs);
+  const products = serializeDocs<IProductDb>(snapshot.docs);
 
   // =====================
   // COUNT TOTAL (ignore pagination but apply search)
@@ -185,23 +194,12 @@ export const editCategory = async(id: string, data: ICategoryInput):Promise<ICat
   }
 
   const totalSnap = await getCountFromServer(
-    query(categoriesRef, ...countConstraints)
+    query(productsRef, ...countConstraints)
   );
   return {
     meta: {
       total: totalSnap.data().count,
     },
-    data: categories,
+    data: products,
   };
-};
-
-export const getCategoryByIds = async (ids: string[]) => {
-  const categories = await getDocs(
-    query(categoriesRef, where(documentId(), "in", ids))
-  );
-
-  return categories.docs.map((d) => ({
-    ...(d.data() as ICategoryDoc),
-    id: d.id,
-  }));
 };

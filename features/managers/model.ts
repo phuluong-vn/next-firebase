@@ -1,7 +1,7 @@
 //model.ts is used to implement basic CRUD operations and handle communication with the database.
 
 import { addDoc, collection, deleteDoc, doc, endAt, getCountFromServer, getDoc, getDocs, limit, orderBy, query, QueryConstraint, startAfter, startAt, Timestamp, updateDoc, where } from "firebase/firestore";
-import {  IAdminDB, IAdminDoc, IAdminInput } from "./type";
+import {  IAdminDb, IAdminDoc, IAdminInput } from "./type";
 import { db } from "@/utils/firebase";
 import { COLLECTION } from "@/constants/commons";
 import { hashPassword } from "@/utils/commons/password";
@@ -11,23 +11,98 @@ import { serializeDocs } from "@/lib/serialize";
 
 const adminRef = collection(db,COLLECTION.ADMIN);
 
-export const findAdminByEmail = async (email:string) : Promise<IAdminDB | undefined> =>{
+export const findAdminByEmail = async (email:string) : Promise<IAdminDb | undefined> =>{
     const existAdmin = await getDocs(query(adminRef, where("email","==", email)));
 
     if(!existAdmin.docs[0])
     {
         return undefined;
     }
-    const admin = existAdmin.docs[0].data() as IAdminDB
+    const admin = existAdmin.docs[0].data() as IAdminDb
     return {
         ...admin,
          id: existAdmin.docs[0].id
     }
 } 
 
-export const deleteManagerById = async (id: string) =>{
-  if (!id) throw new Error("Invalid ID"); 
-  return await deleteDoc(doc(adminRef, id));
+export const getManagerById = async (id: string) => {
+  const existedManager = await getDoc(doc(adminRef, id));
+
+  if (!existedManager) {
+    return undefined;
+  }
+
+  const category = existedManager.data() as IAdminDoc;
+
+  return {
+    ...category,
+    id: existedManager.id,
+  };
+};
+
+export const deleteManagerById = async (id: string) => {
+  if (!id || typeof id !== 'string' || id.trim() === '') {
+    throw new Error("Manager ID is required and must be a valid string");
+  }
+
+  try {
+    // Check if manager exists before deleting
+    const managerDoc = await getDoc(doc(adminRef, id));
+    if (!managerDoc.exists()) {
+      throw new Error("Manager not found");
+    }
+
+    // Delete the manager
+    await deleteDoc(doc(adminRef, id));
+
+    return { success: true, message: "Manager deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting manager:", error);
+    throw error;
+  }
+}
+
+export const deleteManagersByIds = async (ids: string[]) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error("Manager IDs array is required and cannot be empty");
+  }
+
+  const results = [];
+
+  for (const id of ids) {
+    try {
+      await deleteManagerById(id);
+      results.push({ id, success: true });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  
+}
+
+export const deleteInactiveManagers = async () => {
+  try {
+    // Get all inactive managers
+    const inactiveManagersQuery = query(adminRef, where("isActive", "==", false));
+    const snapshot = await getDocs(inactiveManagersQuery);
+
+    if (snapshot.empty) {
+      return { success: true, message: "No inactive managers found", deleted: 0 };
+    }
+
+    const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
+
+    return {
+      success: true,
+      message: `${snapshot.docs.length} inactive managers deleted successfully`,
+      deleted: snapshot.docs.length
+    };
+  } catch (error) {
+    console.error("Error deleting inactive managers:", error);
+    throw error;
+  }
 }
 export const createAdmin = async (data: IAdminInput)=>{
     const existEmail = await findAdminByEmail(data.email);
@@ -66,7 +141,7 @@ export const updateActiveAdmin = async (id: string, isActive: boolean) => {
 //get all categories for list category with pagination, search, order
  export const getManagers = async (
   data: IGetDataInput
-): Promise<IPaginationRes<IAdminDB>> => {
+): Promise<IPaginationRes<IAdminDb>> => {
   const {
     keyword,
     orderField = "created_at",
@@ -119,7 +194,7 @@ export const updateActiveAdmin = async (id: string, isActive: boolean) => {
       query(adminRef, ...constraints, limit(pageSize))
     );
   console.log("snapshot", snapshot.docs);
-    const managers = serializeDocs<IAdminDB>(snapshot.docs);
+    const managers = serializeDocs<IAdminDb>(snapshot.docs);
     console.log("managers", managers);
   
     // =====================

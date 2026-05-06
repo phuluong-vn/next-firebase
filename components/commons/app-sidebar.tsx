@@ -43,7 +43,7 @@ const data = {
     },
     {
       title: "Products",
-      url: "/products",
+      url: "/admin/products",
       icon: IconFolder,
     },
   ]

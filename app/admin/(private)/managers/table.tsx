@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/table"
 import { MdOutlineModeEdit  } from "react-icons/md";
 import Link from 'next/link';
-import { IAdminDB } from '@/features/managers/type';
+import { IAdminDb } from '@/features/managers/type';
 import TableDeleteAction, { ActiveAdminAction } from './table-action';
 import { updateActiveAdminAction } from './action';
 
 interface IProps {
-  data: IAdminDB[];
+  data: IAdminDb[];
 }
 
 const ManagerTable = ({data}:IProps) => {

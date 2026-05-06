@@ -114,7 +114,7 @@ export default function AdminLoginForm () {
               
             </div>
           </div>
-          <Button type="submit" className="w-full mt-3" disabled={!isValid}>
+          <Button type="submit" className="w-full mt-3" >
           Login
         </Button>
         </form>

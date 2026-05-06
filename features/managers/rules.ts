@@ -13,3 +13,4 @@ export const LoginSchema = z.object({
 });
 
 export type LoginFormValues = z.infer<typeof LoginSchema>;
+export type ManagerFormValues = LoginFormValues;
