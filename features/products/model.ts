@@ -6,12 +6,15 @@ import { COLLECTION } from "@/constants/commons";
 import { IGetDataInput, IPaginationRes } from "../type";
 import { getLastVisibleDoc } from "@/utils/commons/queries";
 import { normalizeSlug } from "@/utils/commons/slug";
-import { serializeDocs, serializeSingleDoc } from "@/lib/serialize";
+import { serializeDocs, serializeSingleDoc, serializeValue } from "@/lib/serialize";
 import { getManagerById } from "../managers/model";
 import { getCategoryByIds } from "../categories/model";
+import { ICategoryDb } from "../categories/type";
+import { IAdminDb } from "../managers/type";
 
 const productsRef = collection(db,COLLECTION.PRODUCT);
-
+const categoriesRef = collection(db,COLLECTION.CATEGORY);
+const adminsRef = collection(db,COLLECTION.ADMIN);
 
 export const getProductBySlug = async (slug: string) =>{
     const normalizedSlug = normalizeSlug(slug);
@@ -62,7 +65,7 @@ export const addProduct = async(data: IProductInput):Promise<IProductDb> =>{
         throw Error("Slug have been used!");
     }
 
-    const { createdId, categoryIds, ...restData } = data;
+     const { createdId, categoryIds, ...restData } = data;
     
     const created_by = await getManagerById(createdId);
     const categories = await getCategoryByIds(categoryIds);
@@ -125,7 +128,7 @@ export const editProduct = async(id: string, data: IProductInput):Promise<IProdu
 
 //get all products for list Product with pagination, search, order
  export const getProducts = async (
-  data: IGetDataInput
+  data: IGetDataInput & { categoryIds?: string[] }
 ): Promise<IPaginationRes<IProductDb>> => {
   const {
     keyword,
@@ -133,6 +136,7 @@ export const editProduct = async(id: string, data: IProductInput):Promise<IProdu
     orderType = "desc",
     page = 1,
     size = 5,
+    categoryIds,
   } = data;
 
   const pageNumber = Number(page);
@@ -143,17 +147,16 @@ export const editProduct = async(id: string, data: IProductInput):Promise<IProdu
   // =====================
   const constraints: QueryConstraint[] = [];
 
-  // 👉 SEARCH
-  if (keyword) {
-     constraints.push(orderBy("name", orderType));
+  if (categoryIds?.length) {
+    constraints.push(
+      where("categoryIds", "array-contains-any", categoryIds)
+    );
+  }
 
-  if (orderType === "asc") {
+  if (keyword) {
+    constraints.push(orderBy("name"));
     constraints.push(startAt(keyword));
     constraints.push(endAt(keyword + "\uf8ff"));
-  } else {
-    constraints.push(startAt(keyword + "\uf8ff"));
-    constraints.push(endAt(keyword));
-  }
   } else {
     constraints.push(orderBy(orderField, orderType));
   }
@@ -174,18 +177,105 @@ export const editProduct = async(id: string, data: IProductInput):Promise<IProdu
   }
 
   // =====================
-  // GET DATA
+  // GET PRODUCTS
   // =====================
   const snapshot = await getDocs(
     query(productsRef, ...constraints, limit(pageSize))
   );
 
-  const products = serializeDocs<IProductDb>(snapshot.docs);
+  const docs = snapshot.docs;
 
   // =====================
-  // COUNT TOTAL (ignore pagination but apply search)
+  // 🔥 BATCH CATEGORY IDS
+  // =====================
+  const allCategoryIds = Array.from(
+    new Set(docs.flatMap((d) => d.data().categoryIds || []))
+  );
+
+  const categoriesMap = new Map<string, ICategoryDb>();
+
+  if (allCategoryIds.length) {
+    const chunks = [];
+
+    for (let i = 0; i < allCategoryIds.length; i += 10) {
+      chunks.push(allCategoryIds.slice(i, i + 10));
+    }
+
+    for (const chunk of chunks) {
+      const snap = await getDocs(
+        query(categoriesRef, where("__name__", "in", chunk)) // 👈 FIX CHUẨN
+      );
+
+      snap.docs.forEach((doc) => {
+        categoriesMap.set(doc.id, {
+          id: doc.id,
+          ...doc.data(),
+        } as ICategoryDb);
+      });
+    }
+  }
+// =====================
+// 🔥 BATCH ADMIN IDS
+// =====================
+  const allAdminIds = Array.from(
+  new Set(
+    docs
+      .map((d) => d.data().created_by?.id) // 👈 FIX
+      .filter(Boolean)
+  )
+);
+
+const adminMap = new Map<string, IAdminDb>();
+
+if (allAdminIds.length) {
+  const chunks: string[][] = [];
+
+  for (let i = 0; i < allAdminIds.length; i += 10) {
+    chunks.push(allAdminIds.slice(i, i + 10));
+  }
+
+  for (const chunk of chunks) {
+    const snap = await getDocs(
+      query(adminsRef, where("__name__", "in", chunk)) // 👈 FIX
+    );
+
+    snap.docs.forEach((doc) => {
+      adminMap.set(doc.id, {
+        id: doc.id,
+        ...doc.data(),
+      } as IAdminDb);
+    });
+  }
+}
+  // =====================
+  // MAP DATA 
+  // =====================
+  const products: IProductDb[] = docs.map((doc) => {
+    const data = doc.data() as IProductDb;
+    const product = {
+      ...data,
+      id: doc.id,
+
+      categories: (data.categoryIds || [])
+        .map((id) => categoriesMap.get(id))
+        .filter(Boolean) as ICategoryDb[],
+
+      created_by: adminMap.get(data.created_by.id) || null, // 👈 FIX
+    };
+
+    return serializeValue(product) as IProductDb;
+  });
+ 
+  // =====================
+  // COUNT
   // =====================
   const countConstraints: QueryConstraint[] = [];
+
+  if (categoryIds?.length) {
+    countConstraints.push(
+      where("categoryIds", "array-contains-any", categoryIds)
+    );
+  }
 
   if (keyword) {
     countConstraints.push(orderBy("name"));

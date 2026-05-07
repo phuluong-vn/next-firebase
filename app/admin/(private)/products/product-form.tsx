@@ -180,6 +180,26 @@ import { useRouter } from "next/navigation"
                   )}
                 />
                 <Controller
+                  name="defaultPrice"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="form-rhf-demo-title">
+                        Default Price
+                      </FieldLabel>
+                      <Input
+                    type="number"
+                    placeholder="10.000 vnd"
+                    {...field}
+                    onChange={(v) => field.onChange(Number(v.target.value))}
+                  />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+                <Controller
                   name="categoryIds"
                   control={control}
                   render={({ field, fieldState }) => (
